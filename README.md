@@ -4,9 +4,9 @@
 
 Cron is a software utility that specifies commands to run on a given schedule. \
 Inspired with spring-framework blog
-post: https://spring.io/blog/2020/11/10/new-in-spring-5-3-improved-cron-expressions \
+post: [link](https://spring.io/blog/2020/11/10/new-in-spring-5-3-improved-cron-expressions) \
 Library provides functionality that describes
-in: http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html \
+in: [link](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html) \
 Written in C and designed specifically for embedded devices.
 
 ### Features
