@@ -420,7 +420,8 @@ static void replaceMonthOrdinals(char *fieldBuffer) {
         const char *monthOrdinal = getMonthNameShort(i);
         strcpy(monthNameUpper, monthOrdinal);
         toUpperCaseString(monthNameUpper);
-        replaceString(fieldBuffer, monthNameUpper, (const char *)itoa(i, monthNumber, 10));
+        sprintf(monthNumber, "%d", i);
+        replaceString(fieldBuffer, monthNameUpper, monthNumber);
     }
 }
 
@@ -432,7 +433,8 @@ static void replaceWeekDayOrdinals(char *fieldBuffer) {
         const char *weekOrdinal = getWeekDayNameShort(i);
         strcpy(weekNameUpper, weekOrdinal);
         toUpperCaseString(weekNameUpper);
-        replaceString(fieldBuffer, weekNameUpper, (const char *)itoa(i, weekDayNumber, 10));
+        sprintf(weekDayNumber, "%d", i);
+        replaceString(fieldBuffer, weekNameUpper, weekDayNumber);
     }
 }
 
