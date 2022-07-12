@@ -4,7 +4,7 @@
 int main(int argc, char *argv[MUNIT_ARRAY_PARAM(argc + 1)]) {
     MunitTest emptyTests[] = {END_OF_TESTS};
     MunitSuite testSuitArray[] = {
-            stringUtilsTestSuite
+            cronTestSuite
     };
 
     MunitSuite baseSuite = {

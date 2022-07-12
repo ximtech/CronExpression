@@ -346,7 +346,7 @@ static MunitTest cronTests[] = {
         END_OF_TESTS
 };
 
-static const MunitSuite stringUtilsTestSuite = {
+static const MunitSuite cronTestSuite = {
         .prefix = "Cron: ",
         .tests = cronTests,
         .suites = NULL,
