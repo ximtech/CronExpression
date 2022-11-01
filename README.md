@@ -48,10 +48,6 @@ add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 target_link_libraries(${PROJECT_NAME}.elf CronExpression)
 ```
 
-### Code coverage
-
-<img src="https://github.com/ximtech/CronExpression/blob/main/example/test_coverage.png" alt="image"/>
-
 ### Cron structure
 
 - The Cron pattern consists of six or seven space-separated fields
