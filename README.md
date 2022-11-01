@@ -1,6 +1,7 @@
 # CronExpression
 
 [![tests](https://github.com/ximtech/CronExpression/actions/workflows/cmake-ci.yml/badge.svg?branch=main)](https://github.com/ximtech/CronExpression/actions/workflows/cmake-ci.yml)
+[![codecov](https://codecov.io/gh/ximtech/CronExpression/branch/main/graph/badge.svg?token=i7dQ3yGhTj)](https://codecov.io/gh/ximtech/CronExpression)
 
 Cron is a software utility that specifies commands to run on a given schedule. \
 Inspired with spring-framework blog
