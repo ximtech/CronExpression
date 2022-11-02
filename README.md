@@ -2,6 +2,7 @@
 
 [![tests](https://github.com/ximtech/CronExpression/actions/workflows/cmake-ci.yml/badge.svg?branch=main)](https://github.com/ximtech/CronExpression/actions/workflows/cmake-ci.yml)
 [![codecov](https://codecov.io/gh/ximtech/CronExpression/branch/main/graph/badge.svg?token=i7dQ3yGhTj)](https://codecov.io/gh/ximtech/CronExpression)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/0a5a72592b2c4d438331ae980b3953b8)](https://www.codacy.com/gh/ximtech/CronExpression/dashboard)
 
 Cron is a software utility that specifies commands to run on a given schedule. \
 Inspired with spring-framework blog
