@@ -15,7 +15,10 @@
 
 #define BITS_IN_BYTE 8
 #define BIT_NOT_FOUND (-1)
+
+#ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
+#endif
 
 #define ERROR_DATE_TIME (DateTime){.date = {0}, .time = {.hours = -1, .minutes = -1, .seconds = -1, .millis = -1}}
 
