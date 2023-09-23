@@ -95,7 +95,7 @@ target_link_libraries(${PROJECT_NAME}.elf CronExpression)
 
 | **Cron Expression** 	    |                 **Meaning**                	|
 |:-------------------:	    |:------------------------------------------:	|
-|     `0 0 0 L * *1`     	|      last day of the month at midnight     	|
+|     `0 0 0 L * *`     	|      last day of the month at midnight     	|
 |    `0 0 0 L-3 * *`    	| third-to-last day of the month at midnight 	|
 |     `0 0 0 * * 5L`    	|    last Friday of the month at midnight    	|
 |    `0 0 0 * * THUL`   	|   last Thursday of the month at midnight   	|
