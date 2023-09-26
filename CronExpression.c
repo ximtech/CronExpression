@@ -35,6 +35,7 @@ typedef enum QuartzOption {
     // day of month "L"
     QUARTZ_LAST_DAY_OF_MONTH,
     QUARTZ_LAST_WEEKDAY_OF_MONTH,
+    QUARTZ_LAST_DAY_OF_MONTH_COMPOSITE, // 1,2,3,L or 21-25,L
     QUARTZ_LAST_DAY_OFFSET,
     QUARTZ_NEAREST_WEEKDAY,
     // weekday "L"
@@ -47,11 +48,11 @@ typedef enum QuartzOption {
 typedef struct QuartzOptionHolder {
     bool isLastDayOptionSet;
     bool isLastWeekendOptionSet;
+    bool isLastDayCompositeOptionSet;
     uint8_t lastDayOffset;
     uint8_t nearestWeekday;
     uint8_t lastWeekdayOfMonth;
     uint8_t numberOfWeekdays;
-
 } QuartzOptionHolder;
 
 static const char * const CRON_MACROS[] = {
@@ -71,9 +72,9 @@ static const char *resolveCronMacros(const char *expression);
 static CronStatus parseCronField(CronExpression *cron, CronField cronField, char *cronValue);
 static CronStatus parseCronDayOfMonth(CronExpression *cron, char *cronValue);
 static CronStatus parseCronWeekDay(CronExpression *cron, char *cronValue);
-static CronStatus parseCronDate(CronField cronField, uint8_t *bits, char *cronValue, const ValueRange *range);
-static CronStatus setNumberHits(CronField cronField, uint8_t *bits, char *cronValue, const ValueRange *range);
-static ValueRange parseCronRange(CronField cronField, char *cronValue, CronStatus *error, const ValueRange *range);
+static CronStatus parseCronDate(CronExpression *cron, CronField cronField, uint8_t *bits, char *cronValue, const ValueRange *range);
+static CronStatus setNumberHits(CronExpression *cron, CronField cronField, uint8_t *bits, char *cronValue, const ValueRange *range);
+static ValueRange parseCronRange(CronExpression *cron, CronField cronField, char *cronValue, CronStatus *error, const ValueRange *range);
 static void replaceMonthOrdinals(char *fieldBuffer);
 static void replaceWeekDayOrdinals(char *fieldBuffer);
 
@@ -189,16 +190,16 @@ static const char *resolveCronMacros(const char *expression) {
 static CronStatus parseCronField(CronExpression *cron, CronField cronField, char *cronValue) {
     switch (cronField) {
         case CRON_SECOND:
-            return setNumberHits(CRON_SECOND, cron->seconds, cronValue, &SECOND_OF_MINUTE_RANGE);
+            return setNumberHits(cron, CRON_SECOND, cron->seconds, cronValue, &SECOND_OF_MINUTE_RANGE);
         case CRON_MINUTE:
-            return setNumberHits(CRON_MINUTE, cron->minutes, cronValue, &MINUTE_OF_HOUR_RANGE);
+            return setNumberHits(cron, CRON_MINUTE, cron->minutes, cronValue, &MINUTE_OF_HOUR_RANGE);
         case CRON_HOUR:
-            return setNumberHits(CRON_HOUR, cron->hours, cronValue, &HOUR_OF_DAY_RANGE);
+            return setNumberHits(cron, CRON_HOUR, cron->hours, cronValue, &HOUR_OF_DAY_RANGE);
         case CRON_DAY_OF_MONTH:
             return parseCronDayOfMonth(cron, cronValue);
         case CRON_MONTH:
             replaceMonthOrdinals(cronValue);
-            return setNumberHits(CRON_MONTH, cron->months, cronValue, &MONTH_OF_YEAR_RANGE);
+            return setNumberHits(cron, CRON_MONTH, cron->months, cronValue, &MONTH_OF_YEAR_RANGE);
         case CRON_DAY_OF_WEEK:
             replaceWeekDayOrdinals(cronValue);
             return parseCronWeekDay(cron, cronValue);
@@ -244,7 +245,7 @@ static CronStatus parseCronDayOfMonth(CronExpression *cron, char *cronValue) {
         return CRON_OK;
     }
 
-    return parseCronDate(CRON_DAY_OF_MONTH, cron->daysOfMonth, cronValue, &DAY_OF_MONTH_RANGE);
+    return parseCronDate(cron, CRON_DAY_OF_MONTH, cron->daysOfMonth, cronValue, &DAY_OF_MONTH_RANGE);
 }
 
 static CronStatus parseCronWeekDay(CronExpression *cron, char *cronValue) {
@@ -291,7 +292,7 @@ static CronStatus parseCronWeekDay(CronExpression *cron, char *cronValue) {
         return CRON_OK;
     }
 
-    CronStatus status = parseCronDate(CRON_DAY_OF_WEEK, cron->daysOfWeek, cronValue, &WEEKDAY_RANGE);
+    CronStatus status = parseCronDate(cron, CRON_DAY_OF_WEEK, cron->daysOfWeek, cronValue, &WEEKDAY_RANGE);
     if (isBitSet(cron->daysOfWeek, 0)) {
         setBit(cron->daysOfWeek, 7);   // cron supports 0 for Sunday. GlobalDateTime use 7, so convert week day
         clearBit(cron->daysOfWeek, 0);
@@ -299,14 +300,14 @@ static CronStatus parseCronWeekDay(CronExpression *cron, char *cronValue) {
     return status;
 }
 
-static CronStatus parseCronDate(CronField cronField, uint8_t *bits, char *cronValue, const ValueRange *range) {
+static CronStatus parseCronDate(CronExpression *cron, CronField cronField, uint8_t *bits, char *cronValue, const ValueRange *range) {
     if (isStringEquals(cronValue, "?")) {
         strcpy(cronValue, "*");
     }
-    return setNumberHits(cronField, bits, cronValue, range);
+    return setNumberHits(cron, cronField, bits, cronValue, range);
 }
 
-static CronStatus setNumberHits(CronField cronField, uint8_t *bits, char *cronValue, const ValueRange *range) {
+static CronStatus setNumberHits(CronExpression *cron, CronField cronField, uint8_t *bits, char *cronValue, const ValueRange *range) {
     CronStatus error = CRON_OK;
     char *nextPointer = NULL;
     char *cronFieldValue = splitStringReentrant(cronValue, ",", &nextPointer);
@@ -321,7 +322,7 @@ static CronStatus setNumberHits(CronField cronField, uint8_t *bits, char *cronVa
             }
 
             bool haveNoMaxValue = strchr(cronFieldValue, '-') == NULL;
-            ValueRange cronRange = parseCronRange(cronField, cronFieldValue, &error, range);    // parse from value
+            ValueRange cronRange = parseCronRange(cron, cronField, cronFieldValue, &error, range);    // parse from value
             if (haveNoMaxValue) {
                 cronRange.max = range->max;
             }
@@ -336,7 +337,7 @@ static CronStatus setNumberHits(CronField cronField, uint8_t *bits, char *cronVa
             }
 
         } else {    // Not an incrementer so it must be a range (possibly empty)
-            ValueRange cronRange = parseCronRange(cronField, cronFieldValue, &error, range);
+            ValueRange cronRange = parseCronRange(cron, cronField, cronFieldValue, &error, range);
             if (error != CRON_OK) return error;
             setBitsInRange(bits, &cronRange);
         }
@@ -346,7 +347,7 @@ static CronStatus setNumberHits(CronField cronField, uint8_t *bits, char *cronVa
     return error;
 }
 
-static ValueRange parseCronRange(CronField cronField, char *cronValue, CronStatus *error, const ValueRange *range) {
+static ValueRange parseCronRange(CronExpression *cron, CronField cronField, char *cronValue, CronStatus *error, const ValueRange *range) {
     if (strchr(cronValue, '*') != NULL) return *range;  // full range of bits should be set, from min to max
 
     ValueRange resultRange = {0};
@@ -387,6 +388,12 @@ static ValueRange parseCronRange(CronField cronField, char *cronValue, CronStatu
     } else {    // parse as single number
         int64_t number = strtoll(cronValue, &endPointer, 10);
         if (!isLongNumberValid(number, cronValue, endPointer)) {
+            if (*cronValue == 'L' && cronField == CRON_DAY_OF_MONTH) {
+                setQuartzOption(cron, QUARTZ_LAST_DAY_OF_MONTH, true);
+                setQuartzOption(cron, QUARTZ_LAST_DAY_OF_MONTH_COMPOSITE, true);
+                return resultRange;
+            }
+
             *error = CRON_ERROR_INVALID_SINGLE_VALUE;
             return resultRange;
         }
@@ -500,7 +507,9 @@ static void findNextDayOfMonth(CronExpression *cron, DateTime *nextDateTime) {
     while (count <= CRON_MAX_ATTEMPTS) {
 
         if (isMonthQuartzOptionsSet && (nextDateTime->date.month != currentMonth || count == 0)) {   // set month last day when month is changed or in first iteration, also clean previous month last day
-            clearBitsInRange(cron->daysOfMonth, &DAY_OF_MONTH_RANGE);   // clear previous day of month day of month set bits
+            if (!options.isLastDayCompositeOptionSet) {
+                clearBitsInRange(cron->daysOfMonth, &DAY_OF_MONTH_RANGE);   // clear previous day of month day of month set bits, do not clear for composite month field
+            }
 
             if (options.isLastDayOptionSet) {   // "L"
                 int8_t monthLastDay = lengthOfMonth(nextDateTime->date.month, isLeapYear(nextDateTime->date.year));
@@ -610,11 +619,13 @@ static void resetDateTimeSettings(CronExpression *cron, CronField fromField, Dat
         switch (field) {
             case CRON_MONTH:
                 dateTime->date.month = nextSetBit(cron->months, 0, CRON_MONTHS_LENGTH);
+                dateTime->date.month = dateTime->date.month != 0 ? dateTime->date.month : JANUARY;
                 break;
             case CRON_DAY_OF_MONTH:
             case CRON_DAY_OF_WEEK:
                 dateTime->date.weekDay = nextSetBit(cron->daysOfWeek, 0, CRON_DAY_OF_WEEK_LENGTH);
                 dateTime->date.day = (int8_t)nextSetBit(cron->daysOfMonth, 0, CRON_DAY_OF_MONTH_LENGTH);
+                dateTime->date.day = dateTime->date.day != 0 ? dateTime->date.day : 1;
                 break;
             case CRON_HOUR:
                 dateTime->time.hours = (int8_t)nextSetBit(cron->hours, 0, CRON_HOURS_LENGTH);
@@ -651,6 +662,7 @@ QuartzOptionHolder getQuartzOptions(CronExpression *cron, DateTime *nextDateTime
     QuartzOptionHolder options = {
             .isLastDayOptionSet = getQuartzOption(cron, QUARTZ_LAST_DAY_OF_MONTH),
             .isLastWeekendOptionSet = getQuartzOption(cron, QUARTZ_LAST_WEEKDAY_OF_MONTH),
+            .isLastDayCompositeOptionSet = getQuartzOption(cron, QUARTZ_LAST_DAY_OF_MONTH_COMPOSITE),
             .lastDayOffset = getQuartzOption(cron, QUARTZ_LAST_DAY_OFFSET),
             .nearestWeekday = getQuartzOption(cron, QUARTZ_NEAREST_WEEKDAY),
             .lastWeekdayOfMonth = getQuartzOption(cron, QUARTZ_LAST_GIVEN_WEEKDAY_OF_MONTH),
@@ -755,6 +767,7 @@ static uint8_t getQuartzOption(CronExpression *cron, QuartzOption option) {
     switch (option) {
         case QUARTZ_LAST_DAY_OF_MONTH:
         case QUARTZ_LAST_WEEKDAY_OF_MONTH:
+        case QUARTZ_LAST_DAY_OF_MONTH_COMPOSITE:
             return BIT_READ(cron->quartzOptions[0], option);
         case QUARTZ_LAST_DAY_OFFSET:
         case QUARTZ_NEAREST_WEEKDAY:
@@ -771,6 +784,7 @@ static void setQuartzOption(CronExpression *cron, QuartzOption option, uint8_t v
     switch (option) {
         case QUARTZ_LAST_DAY_OF_MONTH:
         case QUARTZ_LAST_WEEKDAY_OF_MONTH:
+        case QUARTZ_LAST_DAY_OF_MONTH_COMPOSITE:
             BIT_WRITE(cron->quartzOptions[0], option, value);
             break;
         case QUARTZ_LAST_DAY_OFFSET:

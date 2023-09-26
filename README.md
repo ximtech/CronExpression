@@ -16,6 +16,7 @@ Written in C and designed specifically for embedded devices.
 - No dynamic or static memory allocations
 - Time zones and DST rules support
 - All Quartz fields support
+- Composite quartz field support
 - No `time.h` library dependencies
 - Full test coverage
 
@@ -26,7 +27,7 @@ Written in C and designed specifically for embedded devices.
 
 ### Trade-offs
 
-- Composite quartz fields like: `"0 0 0 1W,15,LW * ?"` is not supported
+- Not all composite quartz fields like: `"0 0 0 1W,15,LW * ?"` is supported
 - No year field support
 
 ### Add as CPM project dependency
@@ -83,22 +84,24 @@ target_link_libraries(${PROJECT_NAME}.elf CronExpression)
 
 - You can use these macros instead of the six-digit value
 
-|         **Macro**        	    |         **Meaning**         	|
-|:------------------------:	    |:---------------------------:	|
-| `@yearly (or @annually)` 	    |  once a year `0 0 0 1 1 *`  	|
-|        `@monthly`        	    |  once a month `0 0 0 1 * *` 	|
-|        `@weekly`         	    |  once a week `0 0 0 * * 0`  	|
-|   `@daily (or @midnight)`  	|   once a day `0 0 0 * * *`  	|
-|          `@hourly`         	| once an hour, `0 0 * * * *` 	|
+|     **Macro**        	     |     **Meaning**         	     |
+|:--------------------------:|:-----------------------------:|
+| `@yearly (or @annually)` 	 | once a year `0 0 0 1 1 *`  	  |
+|    `@monthly`        	     | once a month `0 0 0 1 * *` 	  |
+|    `@weekly`         	     | once a week `0 0 0 * * 0`  	  |
+| `@daily (or @midnight)`  	 |  once a day `0 0 0 * * *`  	  |
+|    `@hourly`         	     | once an hour, `0 0 * * * *` 	 |
 
 #### Last Days
 
-| **Cron Expression** 	    |                 **Meaning**                	|
-|:-------------------:	    |:------------------------------------------:	|
-|     `0 0 0 L * *`     	|      last day of the month at midnight     	|
-|    `0 0 0 L-3 * *`    	| third-to-last day of the month at midnight 	|
-|     `0 0 0 * * 5L`    	|    last Friday of the month at midnight    	|
-|    `0 0 0 * * THUL`   	|   last Thursday of the month at midnight   	|
+| **Cron Expression** 	 |                  **Meaning**                	                  |
+|:---------------------:|:--------------------------------------------------------------:|
+|  `0 0 0 L * *`     	  |            last day of the month at midnight     	             |
+| `0 0 0 L-3 * *`    	  |          third-to-last day of the month at midnight 	          |
+|  `0 0 0 * * 5L`    	  |           last Friday of the month at midnight    	            |
+| `0 0 0 * * THUL`   	  |           last Thursday of the month at midnight   	           |
+| `0 0 0 2,3,L * *`   	 |   on the 2nd, 3rd and last day of the month at midnight   	    |
+| `0 0 0 3-8,L * *`   	 | between 3rd and 8th, and last day of the month at midnight   	 |
 
 #### Weekdays
 
@@ -113,6 +116,7 @@ target_link_libraries(${PROJECT_NAME}.elf CronExpression)
 |:-------------------:	|:------------------------------------------:	|
 |   `0 0 0 ? * 5#2`   	| the second Friday in the month at midnight 	|
 |  `0 0 0 ? * MON#1`  	| the first Monday in the month at midnight  	|
+
 
 ### Usage
 ```c
