@@ -128,7 +128,7 @@ CronStatus parseCronExpression(CronExpression *cron, const char *expression) {
         const char *nextSpacePointer = strpbrk(expression, " ");
         if (nextSpacePointer != expression) { // if there are non-space characters
             uint32_t i = 0;
-            while (!isspace(*expression) && *expression != '\0' && i < length) {
+            while (!isspace((int) *expression) && *expression != '\0' && i < length) {
                 cronValue[i] = *expression;
                 expression++;
                 i++;
@@ -203,6 +203,8 @@ static CronStatus parseCronField(CronExpression *cron, CronField cronField, char
         case CRON_DAY_OF_WEEK:
             replaceWeekDayOrdinals(cronValue);
             return parseCronWeekDay(cron, cronValue);
+        default:
+            return CRON_ERROR_UNKNOWN_CRON_FIELD;
     }
 }
 
@@ -269,7 +271,7 @@ static CronStatus parseCronWeekDay(CronExpression *cron, char *cronValue) {
     }
 
     if (strchr(cronValue, '#') != NULL) {   // "[0-7]#[0-9]"
-        if (!isdigit(*cronValue)) {
+        if (!isdigit((int) *cronValue)) {
             return CRON_ERROR_INVALID_DAY_OF_WEEK_VALUE_HASH;
         }
         uint8_t dayOfWeek = *cronValue - '0';
@@ -279,7 +281,7 @@ static CronStatus parseCronWeekDay(CronExpression *cron, char *cronValue) {
         setQuartzOption(cron, QUARTZ_DAY_OF_WEEK, dayOfWeek);
 
         cronValue += 2; // skip dayOfWeek digit and "#"
-        if (!isdigit(*cronValue)) {
+        if (!isdigit((int) *cronValue)) {
             return CRON_ERROR_INVALID_NUMBER_OF_DAY_OF_MONTH_VALUE_HASH;
         }
 
@@ -777,6 +779,8 @@ static uint8_t getQuartzOption(CronExpression *cron, QuartzOption option) {
             return BIT_READ(cron->quartzOptions[0], option) ? cron->quartzOptions[2] : 0;
         case QUARTZ_NUMBER_OF_WEEKDAYS:
             return BIT_READ(cron->quartzOptions[0], option) ? cron->quartzOptions[3] : 0;
+        default:
+            return 0;
     }
 }
 

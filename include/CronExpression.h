@@ -28,6 +28,7 @@ typedef enum CronStatus {
     CRON_ERROR_INVALID_DAY_OF_WEEK_VALUE_L,                  // [0-7]L
     CRON_ERROR_INVALID_DAY_OF_WEEK_VALUE_HASH,               // Invalid first value "[0-7]#[0-9]"
     CRON_ERROR_INVALID_NUMBER_OF_DAY_OF_MONTH_VALUE_HASH,    // Invalid second value "[0-7]#[0-9]"
+    CRON_ERROR_UNKNOWN_CRON_FIELD,
 } CronStatus;
 
 typedef struct CronExpression {
